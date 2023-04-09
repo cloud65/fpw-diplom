@@ -4,7 +4,7 @@ import { Menu, Container, Image, Icon }  from 'semantic-ui-react'
 export const FooterPage = (props) => {
     const {phone, telegram} = props
  return <Menu fixed='bottom' inverted color='blue'>
-      <Container>        
+      <Container id='footer-content'>        
         <Menu.Item as='a' position='right' href={'tel:'+phone}><Icon name='phone'/>&nbsp;{phone}</Menu.Item> 
         <Menu.Item as='a' position='right'><Icon name='telegram'/>&nbsp;{telegram}</Menu.Item>               
         <Menu.Item as='span' position='right' header>

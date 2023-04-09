@@ -40,4 +40,14 @@
       To create a production bundle, use `npm run build` or `yarn build`.
     -->
   </body>
+  <script>
+    const calcContent=()=>{
+        const header = document.getElementById('header-content').clientHeight;
+        let height = document.body.clientHeight-header-document.getElementById('footer-content').clientHeight;
+        document.body.style.setProperty('--height-content', (height-10)+'px');
+        document.body.style.setProperty('--top-content', (header+5)+'px');
+    }
+    window.addEventListener('resize', (event)=>calcContent(), true);
+    window.addEventListener('load', (event)=>calcContent(), true);
+    </script>
 </html>
