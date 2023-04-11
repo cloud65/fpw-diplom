@@ -1,21 +1,29 @@
 import React from 'react'
-import { Menu, Container, Image, Header, Icon, Modal, Button, Form} from 'semantic-ui-react'
+import { Menu, Container, Image, Header, Icon, Modal, Button, Form, Message} from 'semantic-ui-react'
 
-import {loginRequest} from './Requests.js'
+import {loginRequest, logoutRequest} from './Requests.js'
 
 const LoginWin = (props)=>{
-    const [data, setData] = React.useState({login:'', password:''})
+    const [data, setData] = React.useState({login:'', password:''});
+    const [message, setMessage] = React.useState(null);
+    const [loading, setLoading] = React.useState(false);
     
-    const auth=()=>{
-        loginRequest(data, (result)=>{
-            console.log(result)
-        })
+    const auth=(result, data)=>{
+        setLoading(false)
+        if (result!==200){
+            const msg = (data.non_field_errors && data.non_field_errors.join(';')) || String(data)
+            setMessage(msg)
+            return
+        }
+        setMessage(null);
+        props.setUser(d=>{return {...d, token: data.token}});
+        sessionStorage.setItem('user', data.token);
+        props.setOpen(false)
     }
     
     
     
-    return <Modal
-      closeIcon
+    return <Modal      
       open={props.open}
       trigger={<Button>Show Modal</Button>}
       onClose={() => props.setOpen(false)}
@@ -24,18 +32,19 @@ const LoginWin = (props)=>{
     >   
       <Header icon='user' content='Авторизация' />
       <Modal.Content>
-        <Form>
+        <Form loading={loading}>
           <Form.Input value={data.login} onChange={(ev,{value})=>setData({...data, login:value})} 
                 fluid icon='user' iconPosition='left' placeholder='Логин'/>
           <Form.Input value={data.password} onChange={(ev,{value})=>setData({...data, password:value})} 
             fluid icon='lock'  iconPosition='left'  placeholder='Пароль' type='password' />
         </Form>
+        {message && <Message error content={message}/>}
         </Modal.Content>      
       <Modal.Actions>
         <Button onClick={() => props.setOpen(false)}>
           <Icon name='cancel' /> Отмена
         </Button>
-        <Button type='submit' color='blue' onClick={auth}>
+        <Button type='submit' color='blue' disabled={loading} onClick={()=>{setLoading(true); loginRequest(data, auth);}}>
           <Icon name='checkmark' /> Вход
         </Button>
       </Modal.Actions>
@@ -49,6 +58,13 @@ export const HeaderPage = (props) => {
   const [showLogin, setShowLogin] = React.useState(false)
     
   const {phone, telegram, userData} = props
+  console.log(props)
+  const logout=()=>{
+      logoutRequest(userData.token, ()=>{
+          props.setUser({});
+          sessionStorage.setItem('user', null);
+      });
+  }
   
   
   return <React.Fragment>
@@ -57,7 +73,8 @@ export const HeaderPage = (props) => {
         <Image size='tiny' src='/logo_red.png' style={{ position: 'fixed', marginTop: '1.5em' }} />
         <Menu.Item as='a' position='right' href={'tel:'+phone}><Icon name='phone'/>&nbsp;{phone}</Menu.Item> 
         <Menu.Item as='a' position='right'><Icon name='telegram'/>&nbsp;{telegram}</Menu.Item> 
-        <Menu.Item as='a' position='right' onClick={()=>setShowLogin(true)}><Icon name='sign-in'/>&nbsp;Авторизация</Menu.Item>
+        { !props.userData.name && <Menu.Item as='a' position='right' onClick={()=>setShowLogin(true)}><Icon name='sign-in'/>&nbsp;Авторизация</Menu.Item>}
+        { props.userData.name && <Menu.Item as='a' position='right' onClick={logout}><Icon name='sign-out'/>&nbsp;Выход</Menu.Item>}
       </Container>
       <Container> 
         <Header as='h3' color='olive' style={{ margin: 'auto'}}>
@@ -65,7 +82,7 @@ export const HeaderPage = (props) => {
         </Header>
       </Container>
     </Menu>
-    <LoginWin open={showLogin} setOpen={setShowLogin}/>
+    <LoginWin open={showLogin} setOpen={setShowLogin} setUser={props.setUser}/>
     </React.Fragment>
 }
 
