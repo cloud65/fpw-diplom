@@ -2,3 +2,14 @@
 body {
     overflow-y: hidden;
 }
+
+.content-segment {
+    height: var(--height-content);
+    display: flex !important;
+    flex-direction: column;
+}
+
+.conetnt-fill-segment {
+    flex-grow: 1;
+    margin:0 !important;
+}

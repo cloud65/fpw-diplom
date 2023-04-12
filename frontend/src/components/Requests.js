@@ -37,3 +37,7 @@ export const logoutRequest=(token, callback)=>{
 export const userDataRequest=(token, callback)=>{
     request('get', 'login', token, null, callback)    
 }
+
+export const machineCheckRequest=(number, token, callback)=>{
+    request('get', 'check?number='+number, token, null, callback)    
+}

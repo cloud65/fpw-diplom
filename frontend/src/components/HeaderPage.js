@@ -58,7 +58,8 @@ export const HeaderPage = (props) => {
   const [showLogin, setShowLogin] = React.useState(false)
     
   const {phone, telegram, userData} = props
-  console.log(props)
+  
+   
   const logout=()=>{
       logoutRequest(userData.token, ()=>{
           props.setUser({});

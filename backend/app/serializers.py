@@ -2,10 +2,12 @@ from django.contrib.auth import authenticate
 from rest_framework import serializers
 from .models import *
 
+
 class LoginSerializers(serializers.Serializer):
     login = serializers.CharField(max_length=150, allow_null=True)
     password = serializers.CharField(max_length=150, allow_null=True)
-    #email = serializers.CharField(max_length=150, allow_null=True)
+
+    # email = serializers.CharField(max_length=150, allow_null=True)
 
     def validate(self, data):
         username = data.get('login')
@@ -19,3 +21,16 @@ class LoginSerializers(serializers.Serializer):
 
         data['user'] = user
         return data
+
+
+class ReferenceSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Reference
+
+
+class CheckMachinerySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Machinery
+        fields = ['number', 'model', 'motor', 'motor_number', 'transmission', 'transmission_number', 'bridge_drv',
+                  'bridge_drv_number', 'bridge_ctrl', 'bridge_ctrl_number', 'shipment']
+        depth = 2
