@@ -1,7 +1,9 @@
 import React from 'react'
-import { Header, Input, Button, Icon, Segment }  from 'semantic-ui-react'
+import { Header, Input, Button, Icon, Segment, Image }  from 'semantic-ui-react'
 import {machineCheckRequest} from './Requests.js'
 import {MachineInfo} from  './MachineInfo.js';
+import logoRed from '../images/logotype-red.png'; 
+
 
 export const AnonumousPanel = (props) => {
   const inputRef = React.useRef()
@@ -16,7 +18,7 @@ export const AnonumousPanel = (props) => {
   const findDetail=()=>{
       console.log(number)
       machineCheckRequest(number, props.token, (result, data)=> {
-           setInfo((result==200)? data : null)
+           setInfo((result==200)? data.data : null)
       });
   }
    
@@ -41,7 +43,8 @@ export const AnonumousPanel = (props) => {
     </Segment>
     <Header size='tiny' color='olive' content='Результат поиска:' style={{margin:0}}/>
     <Segment color='olive' inverted className='conetnt-fill-segment' >
-    {info && <MachineInfo data={info}/>}
+    {info && <div><MachineInfo {...info}/></div>}
+    {!info && <Image src={logoRed} className='find-logo'/>}
     </Segment>
  </>
 }

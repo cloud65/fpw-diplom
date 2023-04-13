@@ -31,6 +31,6 @@ class ReferenceSerializer(serializers.ModelSerializer):
 class CheckMachinerySerializer(serializers.ModelSerializer):
     class Meta:
         model = Machinery
-        fields = ['number', 'model', 'motor', 'motor_number', 'transmission', 'transmission_number', 'bridge_drv',
-                  'bridge_drv_number', 'bridge_ctrl', 'bridge_ctrl_number', 'shipment']
+        fields = ['number', 'model', 'motor', 'motor_number', 'transmission', 'transmission_number',
+                  'bridge_drv', 'bridge_drv_number', 'bridge_ctrl', 'bridge_ctrl_number', 'shipment']
         depth = 2

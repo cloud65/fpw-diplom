@@ -3,6 +3,36 @@ body {
     overflow-y: hidden;
 }
 
+
+@font-face {
+	font-family: 'PT Astra Sans';
+	src: url("./fonts/PT-Astra-Sans_Regular.ttf");
+	font-weight: 400;
+    font-style: regular;
+}
+
+@font-face {
+	font-family: 'PT Astra Sans';
+	src: url("./fonts/PT-Astra-Sans_Bold.ttf");
+	font-weight: 700;
+    font-style: bold;
+}
+
+@font-face {
+	font-family: 'PT Astra Sans';
+	src: url("./fonts/PT-Astra-Sans_Bold-Italic.ttf");
+	font-weight: 700;
+    font-style: italic;
+}
+
+@font-face {
+	font-family: 'PT Astra Sans';
+	src: url("./fonts/PT-Astra-Sans_Italic.ttf");
+	font-weight: 400;
+    font-style: italic;
+}
+
+
 .content-segment {
     height: var(--height-content);
     display: flex !important;
@@ -12,4 +42,20 @@ body {
 .conetnt-fill-segment {
     flex-grow: 1;
     margin:0 !important;
+    overflow-y: auto;
+     scrollbar-width: thin;
+  scrollbar-color: blue orange;
+}
+.conetnt-fill-segment::-webkit-scrollbar-thumb {
+  background-color: #163E6C !important;
+  border-radius: 2px;
+}
+.conetnt-fill-segment::-webkit-scrollbar {
+  width: 4px;
+}
+
+.find-logo {
+    height: 100%;
+    width: 100%;
+    opacity: 0.1;
 }
