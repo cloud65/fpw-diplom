@@ -38,6 +38,15 @@ export const userDataRequest=(token, callback)=>{
     request('get', 'login', token, null, callback)    
 }
 
+export const refereceRequest=(token, callback)=>{
+    request('get', 'refs', token, null, callback)
+}
+
 export const machineCheckRequest=(number, token, callback)=>{
     request('get', 'check?number='+number, token, null, callback)    
+}
+
+export const machineryListRequest=(filter, order, page, token, callback)=>{
+    const qFilter = Object.keys(filter).map(key=>key+'='+filter[key]).join('&');
+    request('get', 'machinery?page='+page+'&order='+order+'&'+qFilter, token, null, callback);
 }

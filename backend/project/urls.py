@@ -17,11 +17,15 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path
 
-from app.views import LoginAPIView, CheckAPIView, LogoutAPIView
+from app.views import LoginAPIView, CheckAPIView, LogoutAPIView, MachineryAPIView, ReferenceAPIView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/login', LoginAPIView.as_view()),
     path('api/logout', LogoutAPIView.as_view()),
     path('api/check', CheckAPIView.as_view()),
+    path('api/machinery/<str:guid>', MachineryAPIView.as_view()),
+    path('api/machinery', MachineryAPIView.as_view()),
+    path('api/refs', ReferenceAPIView.as_view()),
+
 ]

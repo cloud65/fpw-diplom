@@ -8,12 +8,7 @@ import imgMotor from '../images/motor.png';
 import imgBridgeCtrl from '../images/bridge_ctrl.png'; 
 import imgShipment from '../images/shipment.png'; 
 
-const  formatDate=(date)=>{
-	let d=new Date(date)	
-	return ("0" + d.getDate()).slice(-2) + "." 
-		+ ("0"+(d.getMonth()+1)).slice(-2) + "." 
-		+ d.getFullYear();
-}
+import {formatDate} from './Funcs.js'
 
 const ItemInfo=props=>{
     return <Item.Group>
@@ -31,6 +26,9 @@ const ItemInfo=props=>{
 
 
 export const MachineInfo = (props) => {  
+
+    const auth=false;
+
  return <Grid columns={3} divided>
     <Grid.Column mobile={16} computer={5} tablet={8}>
         <ItemInfo image={imgMachine} unit='Машина' model={props.model.name} number={props.number} description={props.model.description}/>
@@ -47,9 +45,11 @@ export const MachineInfo = (props) => {
     <Grid.Column mobile={16} computer={5} tablet={8}>
         <ItemInfo image={imgBridgeCtrl} unit='Управляемый мост' model={props.bridge_ctrl.name} number={props.bridge_ctrl_number} description={props.bridge_ctrl.description}/>
     </Grid.Column>
-    <Grid.Column mobile={16} computer={5} tablet={8}>
-        <ItemInfo image={imgShipment} unit='Дата отгрузки с завода' model={formatDate(props.shipment)} number={''} description={''}/>
-    </Grid.Column>
+    {auth && <React.Fragment>
+        <Grid.Column mobile={16} computer={5} tablet={8}>
+            <ItemInfo image={imgShipment} unit='Дата отгрузки с завода' model={formatDate(props.shipment)} number={''} description={''}/>
+        </Grid.Column>
+    </React.Fragment>}
  </Grid>
 }
 

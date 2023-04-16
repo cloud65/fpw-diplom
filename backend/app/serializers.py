@@ -32,5 +32,17 @@ class CheckMachinerySerializer(serializers.ModelSerializer):
     class Meta:
         model = Machinery
         fields = ['number', 'model', 'motor', 'motor_number', 'transmission', 'transmission_number',
-                  'bridge_drv', 'bridge_drv_number', 'bridge_ctrl', 'bridge_ctrl_number', 'shipment']
+                  'bridge_drv', 'bridge_drv_number', 'bridge_ctrl', 'bridge_ctrl_number']
         depth = 2
+
+
+class MachinerySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Machinery
+        fields = '__all__'
+        depth = 2
+
+class ReferenceSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Reference
+        fields = '__all__'

@@ -1,3 +1,24 @@
 /*******************************
     User Variable Overrides
 *******************************/
+
+@background: lighten(@olive, 3%);
+@color: @blue;
+@borderColor: @blue;
+/*@internalBorderColor: lighten(@blue, 50%);*/
+
+
+@headerBackground: darken(@olive, 3%);
+@headerColor: @blue;
+@textColor: @blue;
+@selectedTextColor: @blue;
+
+@myDarkenOlive: darken(@olive, 7%);
+
+@sortableBackground: @myDarkenOlive;
+
+@sortableHoverBackground: @myDarkenOlive;
+
+@sortableActiveBackground: @myDarkenOlive;
+
+@sortableActiveHoverBackground: @myDarkenOlive;

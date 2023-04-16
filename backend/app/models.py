@@ -1,11 +1,25 @@
 import uuid
 
 from django.contrib.auth.models import User
+from django.core.exceptions import FieldDoesNotExist
 from django.db import models
+
+
+class UserProfile(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE, primary_key=True, related_name='profile')
+    organization_name = models.CharField(verbose_name='Организация', max_length=250)
 
 
 class BaseModel(models.Model):
     guid = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+
+    @classmethod
+    def field_exists(cls, field):
+        try:
+            cls._meta.get_field(field)
+            return True
+        except FieldDoesNotExist:
+            return False
 
     class Meta:
         abstract = True
@@ -92,6 +106,7 @@ class Machinery(BaseModel):
     def __str__(self):
         return f'{self.model}, зав. № {self.number}'
 
+
 class Maintenance(BaseModel):
     form = ReferenceField(verbose_name='Вид ТО', section=Sections.form_maintenance)
     machine = models.ForeignKey(Machinery, verbose_name='Машина',
@@ -109,6 +124,7 @@ class Maintenance(BaseModel):
 
     def __str__(self):
         return f'{self.machine}, {self.form}, {self.date}'
+
 
 class Reclamation(BaseModel):
     machine = models.ForeignKey(Machinery, verbose_name='Машина',

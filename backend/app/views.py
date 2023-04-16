@@ -9,8 +9,8 @@ from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from app.models import Machinery
-from app.serializers import LoginSerializers, CheckMachinerySerializer
+from app.models import Machinery, Reference
+from app.serializers import LoginSerializers, CheckMachinerySerializer, MachinerySerializer, ReferenceSerializer
 
 
 def get_or_none(model, *args, **kwargs):
@@ -18,6 +18,20 @@ def get_or_none(model, *args, **kwargs):
         return model.objects.get(*args, **kwargs)
     except model.DoesNotExist:
         return None
+
+
+def get_right(user):
+    if user is None:
+        return 0
+    groups = user.groups.values_list('name', flat=True)
+    if 'manager' in groups:
+        return 1
+    elif 'service' in groups:
+        return 2
+    elif 'client' in groups:
+        return 3
+    return 0
+
 
 class LoginAPIView(APIView):
     # authentication_classes = [SessionAuthentication, BasicAuthentication]
@@ -41,7 +55,8 @@ class LoginAPIView(APIView):
         result = dict(
             status=status.HTTP_200_OK,
             user=dict(name=request.user.username,
-                      groups=request.user.groups.values_list('name')
+                      organization_name=request.user.profile.organization_name,
+                      groups=request.user.groups.values_list('name', flat=True)
                       )
         )
         return Response(result)
@@ -64,3 +79,35 @@ class CheckAPIView(APIView):
             return Response(status=status.HTTP_404_NOT_FOUND)
         result = CheckMachinerySerializer(machine)
         return Response({"status": status.HTTP_200_OK, "data": result.data})
+
+
+class ReferenceAPIView(APIView):
+    def get(self, request, *args, **kwargs):
+        if not get_right(request.user):
+            return Response(status=status.HTTP_403_FORBIDDEN)
+        query_set = Reference.objects.filter().order_by('name')
+        serializer = ReferenceSerializer(query_set, many=True)
+        sections = ['model', 'motor', 'transmission', 'bridge_drv', 'bridge_ctrl',
+                    'form_maintenance', 'unit', 'recovery', 'organization']
+        result = {key: [] for key in sections}
+        for row in serializer.data:
+            result[sections[row['section'] - 1]].append(row)
+        return Response({"status": status.HTTP_200_OK, "data": result})
+
+
+class MachineryAPIView(APIView):
+    def get(self, request, *args, **kwargs):
+        filter = {key: value for key, value in request.query_params.items() if value and Machinery.field_exists(key)}
+        right = get_right(request.user)
+        print(request.user)
+        if right == 1:
+            query_set = Machinery.objects.filter(**filter)
+        elif right == 2:
+            query_set = Machinery.objects.filter(service=request.user, **filter)
+        elif right == 3:
+            query_set = Machinery.objects.filter(client=request.user, **filter)
+        else:
+            return Response(status=status.HTTP_403_FORBIDDEN)
+        order = '' if request.query_params.get('order', 'ascending') == 'descending' else '-'
+        serializer = MachinerySerializer(query_set.order_by(order + 'shipment'), many=True)
+        return Response({"status": status.HTTP_200_OK, "data": serializer.data})

@@ -18,7 +18,11 @@ export const AnonumousPanel = (props) => {
   const findDetail=()=>{
       console.log(number)
       machineCheckRequest(number, props.token, (result, data)=> {
-           setInfo((result==200)? data.data : null)
+          if (result!==200){
+              props.setMessage('По вашему запросу ничего не найдено!')
+              setInfo(null);
+          }
+          setInfo(data.data);
       });
   }
    
@@ -42,7 +46,7 @@ export const AnonumousPanel = (props) => {
         </Header>
     </Segment>
     <Header size='tiny' color='olive' content='Результат поиска:' style={{margin:0}}/>
-    <Segment color='olive' inverted className='conetnt-fill-segment' >
+    <Segment color='olive' inverted className='conetnt-fill-segment'>
     {info && <div><MachineInfo {...info}/></div>}
     {!info && <Image src={logoRed} className='find-logo'/>}
     </Segment>
