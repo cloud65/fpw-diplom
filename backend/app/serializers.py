@@ -36,11 +36,22 @@ class CheckMachinerySerializer(serializers.ModelSerializer):
         depth = 2
 
 
+class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ('first_name', 'last_name', 'email', 'profile')
+        depth = 2
+
+
 class MachinerySerializer(serializers.ModelSerializer):
+    service = UserSerializer()
+    client = UserSerializer()
+
     class Meta:
         model = Machinery
         fields = '__all__'
         depth = 2
+
 
 class ReferenceSerializer(serializers.ModelSerializer):
     class Meta:

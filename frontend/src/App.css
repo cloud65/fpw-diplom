@@ -3,6 +3,10 @@ body {
     overflow-y: hidden;
 }
 
+p {
+    line-height: 1 !important;
+    margin: 0 !important;
+}
 
 @font-face {
 	font-family: 'PT Astra Sans';
@@ -43,6 +47,7 @@ body {
     flex-grow: 1;
     margin:0 !important;
     overflow-y: auto;
+    overflow-x: hidden;
 }
 .conetnt-fill-segment::-webkit-scrollbar-thumb {
   background-color: #163E6C !important;

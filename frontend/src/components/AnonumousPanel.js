@@ -47,7 +47,7 @@ export const AnonumousPanel = (props) => {
     </Segment>
     <Header size='tiny' color='olive' content='Результат поиска:' style={{margin:0}}/>
     <Segment color='olive' inverted className='conetnt-fill-segment'>
-    {info && <div><MachineInfo {...info}/></div>}
+    {info && <div><MachineInfo {...info}  media={props.media}/></div>}
     {!info && <Image src={logoRed} className='find-logo'/>}
     </Segment>
  </>

@@ -55,10 +55,10 @@ const LoginWin = (props)=>{
 
 
 export const HeaderPage = (props) => {
-  const [showLogin, setShowLogin] = React.useState(false)
+  const [showLogin, setShowLogin] = React.useState(false);
     
-  const {phone, telegram, userData} = props
-  
+  const {phone, telegram, userData} = props;
+  const isMobile=props.media==='mobile';
    
   const logout=()=>{
       logoutRequest(userData.token, ()=>{
@@ -72,13 +72,13 @@ export const HeaderPage = (props) => {
     <Menu fixed='top' color='blue' inverted size='huge' icon style={{display:'block'}} id='header-content'>
       <Container>      
         <Image size='tiny' src='/logo_red.png' style={{ position: 'fixed', marginTop: '1.5em' }} />
-        <Menu.Item as='a' position='right' href={'tel:'+phone}><Icon name='phone'/>&nbsp;{phone}</Menu.Item> 
-        <Menu.Item as='a' position='right'><Icon name='telegram'/>&nbsp;{telegram}</Menu.Item> 
-        { !props.userData.name && <Menu.Item as='a' position='right' onClick={()=>setShowLogin(true)}><Icon name='sign-in'/>&nbsp;Авторизация</Menu.Item>}
-        { props.userData.name && <Menu.Item as='a' position='right' onClick={logout}><Icon name='sign-out'/>&nbsp;Выход</Menu.Item>}
+        <Menu.Item as='a' position='right' href={'tel:'+phone}><Icon name='phone'/>&nbsp;{!isMobile ? phone : ''}</Menu.Item> 
+        <Menu.Item as='a' position='right' href={telegram}><Icon name='telegram'/>&nbsp;{!isMobile ? telegram : ''}</Menu.Item> 
+        { !props.userData.name && <Menu.Item as='a' position='right' onClick={()=>setShowLogin(true)}><Icon name='sign-in'/>&nbsp;{!isMobile ? 'Авторизация' : ''}</Menu.Item>}
+        { props.userData.name && <Menu.Item as='a' position='right' onClick={logout}><Icon name='sign-out'/>&nbsp;{!isMobile ? 'Выход' : ''}</Menu.Item>}
       </Container>
       <Container> 
-        <Header as='h3' color='olive' style={{ margin: 'auto'}}>
+        <Header size={isMobile ? 'tiny' : 'small'} color='olive' style={{ margin: 'auto'}} textAlign='center'>
             Электронная сервисная книжка "Мой Силант"
         </Header>
       </Container>

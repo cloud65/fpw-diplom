@@ -19,6 +19,8 @@ const getRight=(groups)=>{
     return 0
 }
 
+const PHONE='+7-8352-20-12-09';
+const TELEGRAM='https://t.me/'+PHONE;
 
 
 const MessageBox=(props)=>{
@@ -67,7 +69,7 @@ export const MainPage = () => {
    
     
   return (<React.Fragment>
-    <HeaderPage phone='+545645645' telegram='t.me' userData={userData} setUser={setUser}/>
+    <HeaderPage phone={PHONE} telegram={TELEGRAM} userData={userData} setUser={setUser} media={media}/>
   <Container id='main-content' style={{ marginTop: 'var(--top-content)' }}>
     <Segment className='content-segment' color='blue' inverted>
         {(!userData.name) 
@@ -76,7 +78,7 @@ export const MainPage = () => {
         }
     </Segment>
   </Container>
-  <FooterPage phone='+545645645' telegram='t.me'/>
+  <FooterPage phone={PHONE} telegram={TELEGRAM}  media={media}/>
   <MessageBox message={message} onClose={()=>setMessage(null)}/> 
   </React.Fragment>)
 }

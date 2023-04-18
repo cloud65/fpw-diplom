@@ -96,10 +96,16 @@ class ReferenceAPIView(APIView):
 
 
 class MachineryAPIView(APIView):
-    def get(self, request, *args, **kwargs):
-        filter = {key: value for key, value in request.query_params.items() if value and Machinery.field_exists(key)}
+    def get(self, request, guid=None, *args, **kwargs):
         right = get_right(request.user)
-        print(request.user)
+        if guid is not None and right>0:
+            instance = get_or_none(Machinery, guid=guid)
+            if instance is None:
+                return Response(status=status.HTTP_404_FORBIDDEN)
+            serializer = MachinerySerializer(instance)
+            return Response({"status": status.HTTP_200_OK, "data": serializer.data})
+
+        filter = {key: value for key, value in request.query_params.items() if value and Machinery.field_exists(key)}
         if right == 1:
             query_set = Machinery.objects.filter(**filter)
         elif right == 2:
@@ -111,3 +117,4 @@ class MachineryAPIView(APIView):
         order = '' if request.query_params.get('order', 'ascending') == 'descending' else '-'
         serializer = MachinerySerializer(query_set.order_by(order + 'shipment'), many=True)
         return Response({"status": status.HTTP_200_OK, "data": serializer.data})
+

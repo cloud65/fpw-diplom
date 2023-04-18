@@ -50,3 +50,7 @@ export const machineryListRequest=(filter, order, page, token, callback)=>{
     const qFilter = Object.keys(filter).map(key=>key+'='+filter[key]).join('&');
     request('get', 'machinery?page='+page+'&order='+order+'&'+qFilter, token, null, callback);
 }
+
+export const machineryGetRequest=(guid, token, callback)=>{
+    request('get', 'machinery/'+guid, token, null, callback)    
+}
