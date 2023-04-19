@@ -73,7 +73,7 @@ export const HeaderPage = (props) => {
       <Container>      
         <Image size='tiny' src='/logo_red.png' style={{ position: 'fixed', marginTop: '1.5em' }} />
         <Menu.Item as='a' position='right' href={'tel:'+phone}><Icon name='phone'/>&nbsp;{!isMobile ? phone : ''}</Menu.Item> 
-        <Menu.Item as='a' position='right' href={telegram}><Icon name='telegram'/>&nbsp;{!isMobile ? telegram : ''}</Menu.Item> 
+        <Menu.Item as='a' position='right' href={telegram}><Icon name='telegram'/>&nbsp;{!isMobile ? 'telegram' : ''}</Menu.Item> 
         { !props.userData.name && <Menu.Item as='a' position='right' onClick={()=>setShowLogin(true)}><Icon name='sign-in'/>&nbsp;{!isMobile ? 'Авторизация' : ''}</Menu.Item>}
         { props.userData.name && <Menu.Item as='a' position='right' onClick={logout}><Icon name='sign-out'/>&nbsp;{!isMobile ? 'Выход' : ''}</Menu.Item>}
       </Container>

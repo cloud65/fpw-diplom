@@ -1,5 +1,5 @@
 from django.contrib.auth import logout
-from django.contrib.auth.models import update_last_login
+from django.contrib.auth.models import update_last_login, User
 from django.shortcuts import render
 from rest_framework import status
 from rest_framework.authentication import SessionAuthentication, BasicAuthentication
@@ -9,8 +9,9 @@ from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from app.models import Machinery, Reference
-from app.serializers import LoginSerializers, CheckMachinerySerializer, MachinerySerializer, ReferenceSerializer
+from app.models import Machinery, Reference, UserProfile
+from app.serializers import LoginSerializers, CheckMachinerySerializer, MachinerySerializer, ReferenceSerializer, \
+    ReferenceUsersSerializer
 
 
 def get_or_none(model, *args, **kwargs):
@@ -83,7 +84,8 @@ class CheckAPIView(APIView):
 
 class ReferenceAPIView(APIView):
     def get(self, request, *args, **kwargs):
-        if not get_right(request.user):
+        right=get_right(request.user)
+        if not right:
             return Response(status=status.HTTP_403_FORBIDDEN)
         query_set = Reference.objects.filter().order_by('name')
         serializer = ReferenceSerializer(query_set, many=True)
@@ -92,6 +94,13 @@ class ReferenceAPIView(APIView):
         result = {key: [] for key in sections}
         for row in serializer.data:
             result[sections[row['section'] - 1]].append(row)
+
+        for group in ['client', 'service']:
+            users = User.objects.filter(groups__name=group)
+            query_set = UserProfile.objects.exclude(organization_name__exact='').filter(user__in=users)
+            serializer = ReferenceUsersSerializer(query_set.order_by('organization_name'), many=True)
+            result[group] = serializer.data
+
         return Response({"status": status.HTTP_200_OK, "data": result})
 
 

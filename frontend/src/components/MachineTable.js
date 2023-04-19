@@ -3,7 +3,7 @@ import { Table, Icon, Button, Portal, Segment, Header, Form }  from 'semantic-ui
 import {formatDate} from './Funcs.js'
 import {machineryListRequest} from './Requests.js'
 import {machineryGetRequest} from './Requests.js'
-import {MachineInfo} from  './MachineInfo.js';
+import {MachineForm} from  './MachineForm.js';
 
 const getCols = (media, right)=>{
     const data = {
@@ -106,6 +106,7 @@ export const MachineTable = (props) => {
   const [page, setPage] = React.useState(1) 
   const [data, setData] = React.useState([]) 
   const [machine, setMachine] = React.useState(null)
+  const [edit, setEdit] = React.useState(false)
   
   React.useEffect(()=>{
       machineryListRequest(filter, order, page, props.userData.token, (result, data)=> {
@@ -118,6 +119,10 @@ export const MachineTable = (props) => {
   }, [filter, order, page])
   
   const openMachine=(guid)=>{
+      if (!guid){
+          setMachine({guid: null})
+          return
+      }
       setLoader(true);
       machineryGetRequest(guid, props.userData.token, (result, data)=> {
           setLoader(false);
@@ -154,13 +159,9 @@ export const MachineTable = (props) => {
   })
   
  if (machine){
-     return <>
-     <Button onClick={()=>setMachine(null)} icon color='blue' basic><Icon name='list ul'/> Список</Button>
-     {props.userData.right===1 && <Button basic icon color='blue' onClick={()=>setShowFilter(true)}>
-        <Icon name='edit' color='red'/> Изменить        
-      </Button>}
-     <div><MachineInfo {...machine} auth={props.userData.right}  media={props.media}/></div>
-     </>
+     return <MachineForm data={machine} edit={edit} right={props.userData.right}  media={props.media} references={props.references}
+                onClose={()=>{setEdit(false);setMachine(null)}} setEdit={setEdit}/>
+
  } 
  
  return <Segment basic style={{margin:0, padding:0}} loading={loader}>
@@ -169,7 +170,7 @@ export const MachineTable = (props) => {
       <Button basic icon color={Object.keys(filter).length ? 'red' :'blue'} onClick={()=>setShowFilter(true)}>
         <Icon name='filter' />
       </Button>
-      {props.userData.right===1 && <Button basic icon color='blue' onClick={()=>setShowFilter(true)}>
+      {props.userData.right===1 && <Button basic icon color='blue' onClick={()=>{setEdit(true); openMachine(null)}}>
         <Icon name='plus' color='red'/> Добавить        
       </Button>}
     </Button.Group>

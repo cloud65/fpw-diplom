@@ -1,7 +1,7 @@
 import React from 'react'
 import { Header, Input, Button, Icon, Segment, Image }  from 'semantic-ui-react'
 import {machineCheckRequest} from './Requests.js'
-import {MachineInfo} from  './MachineInfo.js';
+import {MachineForm} from  './MachineForm.js';
 import logoRed from '../images/logotype-red.png'; 
 
 
@@ -47,7 +47,7 @@ export const AnonumousPanel = (props) => {
     </Segment>
     <Header size='tiny' color='olive' content='Результат поиска:' style={{margin:0}}/>
     <Segment color='olive' inverted className='conetnt-fill-segment'>
-    {info && <div><MachineInfo {...info}  media={props.media}/></div>}
+    {info && <div><MachineForm data={info}  media={props.media}/></div>}
     {!info && <Image src={logoRed} className='find-logo'/>}
     </Segment>
  </>
