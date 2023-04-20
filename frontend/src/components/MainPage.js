@@ -24,6 +24,12 @@ const TELEGRAM='https://t.me/'+PHONE;
 
 
 const MessageBox=(props)=>{
+    let header = props.message
+    let error = null
+    if (props.message && typeof(props.message)==='object'){
+        header  = props.message.header
+        error = props.message.error
+    }
     return <Portal onClose={props.onClose} open={!!props.message}>
     <Segment
       style={{
@@ -33,8 +39,8 @@ const MessageBox=(props)=>{
         zIndex: 1000,
       }}
     >
-       <Header>{props.message}</Header>
-
+       <Header>{header}</Header>
+           {error && <p>{error}</p>}
       <Button
         content='Ok'
         color='blue'

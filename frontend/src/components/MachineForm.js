@@ -14,6 +14,7 @@ import imgService from '../images/service.png';
 import imgConsignee from '../images/consignee.png'; 
 import imgEquipment from '../images/equipment.png'; 
 
+import {machinerySaveRequest} from './Requests.js'
 
 
 import {formatDate} from './Funcs.js'
@@ -36,19 +37,29 @@ const MachineView = (props) => {
  const { data } = props
  return <Grid columns={3} divided>
     <Grid.Column mobile={16} computer={5} tablet={8}>
-        <ItemInfo media={data.media} image={imgMachine} unit='Модель' model={data.model.name} number={"№ "+data.number} description={data.model.description}/>
+        <ItemInfo media={data.media} image={imgMachine} unit='Модель' 
+            model={data.model && data.model.name} number={"№ "+data.number} 
+            description={data.model && data.model.description}/>
     </Grid.Column>
     <Grid.Column mobile={16} computer={5} tablet={8}>
-        <ItemInfo media={data.media} image={imgMotor} unit='Двигатель' model={data.motor.name} number={"№ "+data.motor_number} description={data.motor.description}/>
+        <ItemInfo media={data.media} image={imgMotor} unit='Двигатель' 
+            model={data.motor && data.motor.name} number={"№ "+data.motor_number} 
+            description={data.motor && data.motor.description}/>
     </Grid.Column>
     <Grid.Column mobile={16} computer={5} tablet={8}>
-        <ItemInfo media={data.media} image={imgTransmission} unit='Трансмиссия' model={data.transmission.name} number={"№ "+data.transmission_number} description={data.transmission.description}/>
+        <ItemInfo media={data.media} image={imgTransmission} unit='Трансмиссия' 
+            model={data.transmission && data.transmission.name} number={"№ "+data.transmission_number} 
+            description={data.transmission && data.transmission.description}/>
     </Grid.Column>
     <Grid.Column mobile={16} computer={5} tablet={8}>
-        <ItemInfo media={data.media} image={imgBridgeDrv} unit='Ведущий мост' model={data.bridge_drv.name} number={"№ "+data.bridge_drv_number} description={data.bridge_drv.description}/>
+        <ItemInfo media={data.media} image={imgBridgeDrv} unit='Ведущий мост' 
+            model={data.bridge_drv && data.bridge_drv.name} number={"№ "+data.bridge_drv_number} 
+            description={data.bridge_drv && data.bridge_drv.description}/>
     </Grid.Column>
     <Grid.Column mobile={16} computer={5} tablet={8}>
-        <ItemInfo media={data.media} image={imgBridgeCtrl} unit='Управляемый мост' model={data.bridge_ctrl.name} number={"№ "+data.bridge_ctrl_number} description={data.bridge_ctrl.description}/>
+        <ItemInfo media={data.media} image={imgBridgeCtrl} unit='Управляемый мост' 
+            model={data.bridge_ctrl && data.bridge_ctrl.name} number={"№ "+data.bridge_ctrl_number} 
+            description={data.bridge_ctrl && data.bridge_ctrl.description}/>
     </Grid.Column>
     {props.right && <React.Fragment>
         <Grid.Column mobile={16} computer={5} tablet={8}>
@@ -74,7 +85,7 @@ const MachineView = (props) => {
         
         <Grid.Column mobile={16} computer={5} tablet={8}>
             <ItemInfo media={data.media} image={imgEquipment} unit='Комплектация' model={''} 
-                number={data.equipment.split(/\r?\n/).map((e,i)=><p key={i}>{e}</p>)} 
+                number={data.equipment && data.equipment.split(/\r?\n/).map((e,i)=><p key={i}>{e}</p>)} 
                 description={''}/>
         </Grid.Column>
         
@@ -84,6 +95,7 @@ const MachineView = (props) => {
 
 const MachineEdit=(props)=>{
     const [data, setData] = React.useState({})
+    const [loader, setLoader] = React.useState(false)
     
     const models = props.references.model.map(e=> {return {key:e.guid, value:e.guid, text:e.name}})
     const motors = props.references.motor.map(e=> {return {key:e.guid, value:e.guid, text:e.name}})
@@ -94,7 +106,6 @@ const MachineEdit=(props)=>{
     const services = props.references.service.map(e=> {return {key:e.user, value:e.user, text:e.organization_name}})
     
     React.useEffect(()=>{
-        console.log(props.data)
         if (!props.data.guid) {
             setData({guid:null})
             return
@@ -109,8 +120,31 @@ const MachineEdit=(props)=>{
     
     const handleChange=(ev, {name, value})=>setData(d=>{return {...d, [name]:value }})
 
+    const save=()=>{        
+        setLoader(true);
+        machinerySaveRequest(data.guid || 'create', props.token, data, (result, data)=> {
+          setLoader(false);
+          if (result!==200) {
+              props.setMessage({header: 'Ошибка записи (код '+result+')', error:data.error})
+              return
+          }
+          props.setEdit(false)
+          props.reloadMachine(data.data.guid)
+          props.reload(new Date)
+        })
+        
+    }
+    
 
-    return <Form style={{padding: '0.4em'}}>
+    return <>
+        <Button onClick={props.onClose} icon color='blue' basic>
+            <Icon name='cancel'/>Отмена
+        </Button>
+        {props.right===1 && <Button basic icon color='blue' onClick={save}>
+             <Icon name='save' color='red'/>Записать        
+        </Button>}
+        <div>
+        <Form style={{padding: '0.4em'}} loading={loader}>
         <Form.Group widths='equal' >
             <Form.Select label='Модель техники' name='model' value={data.model||''} onChange={handleChange} options={models}/>
             <Form.Input label='Зав. № машины' name='number' value={data.number||''} onChange={handleChange}/>
@@ -145,22 +179,14 @@ const MachineEdit=(props)=>{
             <Form.Select label='Клиент' name='client' value={data.client||''} onChange={handleChange} options={clients} search/>
         </Form.Group>
     </Form>
+    </div>
+   </>
 }
 
 
 export const MachineForm = (props) => {
     if (props.edit){
-        return (<>
-        <Button onClick={props.onClose} icon color='blue' basic>
-            <Icon name='cancel'/>Отмена
-        </Button>
-        {props.right===1 && <Button basic icon color='blue' onClick={()=>props.setEdit(false)}>
-             <Icon name='save' color='red'/>Записать        
-        </Button>}
-        <div>
-            <MachineEdit {...props}/>
-        </div>
-        </>)
+        return <MachineEdit {...props}/>        
     }else {
         return (<>
         <Button onClick={props.onClose} icon color='blue' basic>

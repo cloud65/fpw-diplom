@@ -52,6 +52,11 @@ class MachinerySerializer(serializers.ModelSerializer):
         fields = '__all__'
         depth = 2
 
+class MachinerySaveSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Machinery
+        fields = '__all__'
+
 
 class ReferenceSerializer(serializers.ModelSerializer):
     class Meta:

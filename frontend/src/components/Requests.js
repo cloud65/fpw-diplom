@@ -54,3 +54,7 @@ export const machineryListRequest=(filter, order, page, token, callback)=>{
 export const machineryGetRequest=(guid, token, callback)=>{
     request('get', 'machinery/'+guid, token, null, callback)    
 }
+
+export const machinerySaveRequest=(guid, token, data, callback)=>{
+    request('post', 'machinery/'+guid, token, data, callback)    
+}

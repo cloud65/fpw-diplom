@@ -107,6 +107,7 @@ export const MachineTable = (props) => {
   const [data, setData] = React.useState([]) 
   const [machine, setMachine] = React.useState(null)
   const [edit, setEdit] = React.useState(false)
+  const [reload, setReload] = React.useState(0)
   
   React.useEffect(()=>{
       machineryListRequest(filter, order, page, props.userData.token, (result, data)=> {
@@ -116,9 +117,13 @@ export const MachineTable = (props) => {
           }
           setData(data.data)
       })
-  }, [filter, order, page])
+  }, [filter, order, page, reload])
   
-  const openMachine=(guid)=>{
+  React.useEffect(()=>{
+      props.hideMenu(!!(edit || machine))
+  }, [edit, machine])
+  
+  const openMachine=(guid)=>{      
       if (!guid){
           setMachine({guid: null})
           return
@@ -159,7 +164,9 @@ export const MachineTable = (props) => {
   })
   
  if (machine){
-     return <MachineForm data={machine} edit={edit} right={props.userData.right}  media={props.media} references={props.references}
+     return <MachineForm data={machine} edit={edit} right={props.userData.right} token={props.userData.token}
+                media={props.media} references={props.references} setMessage={props.setMessage}
+                reload={setReload} reloadMachine={openMachine}
                 onClose={()=>{setEdit(false);setMachine(null)}} setEdit={setEdit}/>
 
  } 

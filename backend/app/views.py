@@ -11,7 +11,7 @@ from rest_framework.views import APIView
 
 from app.models import Machinery, Reference, UserProfile
 from app.serializers import LoginSerializers, CheckMachinerySerializer, MachinerySerializer, ReferenceSerializer, \
-    ReferenceUsersSerializer
+    ReferenceUsersSerializer, MachinerySaveSerializer
 
 
 def get_or_none(model, *args, **kwargs):
@@ -127,3 +127,20 @@ class MachineryAPIView(APIView):
         serializer = MachinerySerializer(query_set.order_by(order + 'shipment'), many=True)
         return Response({"status": status.HTTP_200_OK, "data": serializer.data})
 
+    def post(self, request, guid=None, *args, **kwargs):
+        right = get_right(request.user)
+        if right!=1:
+            return Response(status=status.HTTP_403_FORBIDDEN)
+        if guid=='create':
+            serializer = MachinerySaveSerializer(data=request.data)
+        else:
+            serializer = MachinerySaveSerializer(get_or_none(Machinery, guid=guid), data=request.data)
+        if serializer.is_valid(raise_exception=False):
+            serializer.save()
+            return Response({"status": status.HTTP_200_OK, "data": serializer.data})
+
+        default_errors = serializer.errors
+        field_names = []
+        for field_name, field_errors in default_errors.items():
+            field_names.append(field_name)
+        return Response({'error': f'Неверные значения {field_names}'}, status=status.HTTP_400_BAD_REQUEST)
