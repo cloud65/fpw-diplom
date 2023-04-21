@@ -63,7 +63,7 @@ class ReferenceSerializer(serializers.ModelSerializer):
         model = Reference
         fields = '__all__'
 
-class ReferenceUsersSerializer(serializers.ModelSerializer):
+class UserProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = UserProfile
         fields = '__all__'

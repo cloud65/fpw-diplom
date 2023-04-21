@@ -42,6 +42,10 @@ export const refereceRequest=(token, callback)=>{
     request('get', 'refs', token, null, callback)
 }
 
+export const refereceGetSection=(section, token, callback)=>{
+    request('get', 'refs/'+section, token, null, callback)
+}
+
 export const machineCheckRequest=(number, token, callback)=>{
     request('get', 'check?number='+number, token, null, callback)    
 }

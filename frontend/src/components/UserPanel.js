@@ -2,6 +2,8 @@ import React from 'react'
 import { Header, Input, Button, Icon, Segment, Image, Tab }  from 'semantic-ui-react'
 import {refereceRequest} from './Requests.js'
 import {MachineTable} from  './MachineTable.js';
+import {RefereceTable} from  './RefereceTable.js';
+
 
 const rightText=["Не авторизован", "Менеджер", "Сервисная компания", "Клиент"]
 const rightIcon=["user secret", "address book", "users", "user"]
@@ -12,14 +14,19 @@ export const UserPanel = (props) => {
   const [references, setReferences] = React.useState({})
   const [info, setInfo] = React.useState(null)
   
-  React.useEffect(()=>{
-        refereceRequest(props.userData.token, (result, data)=> {
+  
+  const reloadRefereces=()=>{
+      refereceRequest(props.userData.token, (result, data)=> {
           if (result!==200) {
               props.setMessage('Нет данных справочников (код '+result+')')
               return
           } 
           setReferences(data.data)
       })
+  }
+  
+  React.useEffect(()=>{
+       reloadRefereces() 
   }, [])
    
    const panes = [
@@ -36,6 +43,13 @@ export const UserPanel = (props) => {
     render: () => <Tab.Pane as='div'>0</Tab.Pane>,
   },
 ]
+
+ if(props.userData.right===1) {
+     panes.push({
+        menuItem: 'Cправочники',
+    render: () => <Tab.Pane as='div'><RefereceTable {...props} reload={()=>reloadRefereces()}/></Tab.Pane>,
+ })
+ }
    
  const menuStyle = hiddenMenu ? {display: 'none'} : {}
  return <>

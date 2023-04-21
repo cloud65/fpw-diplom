@@ -11,7 +11,7 @@ from rest_framework.views import APIView
 
 from app.models import Machinery, Reference, UserProfile
 from app.serializers import LoginSerializers, CheckMachinerySerializer, MachinerySerializer, ReferenceSerializer, \
-    ReferenceUsersSerializer, MachinerySaveSerializer
+    MachinerySaveSerializer, UserProfileSerializer
 
 
 def get_or_none(model, *args, **kwargs):
@@ -84,7 +84,7 @@ class CheckAPIView(APIView):
 
 class ReferenceAPIView(APIView):
     def get(self, request, *args, **kwargs):
-        right=get_right(request.user)
+        right = get_right(request.user)
         if not right:
             return Response(status=status.HTTP_403_FORBIDDEN)
         query_set = Reference.objects.filter().order_by('name')
@@ -98,16 +98,23 @@ class ReferenceAPIView(APIView):
         for group in ['client', 'service']:
             users = User.objects.filter(groups__name=group)
             query_set = UserProfile.objects.exclude(organization_name__exact='').filter(user__in=users)
-            serializer = ReferenceUsersSerializer(query_set.order_by('organization_name'), many=True)
+            serializer = UserProfileSerializer(query_set.order_by('organization_name'), many=True)
             result[group] = serializer.data
 
         return Response({"status": status.HTTP_200_OK, "data": result})
 
 
+class ReferenceEditAPIView(APIView):
+    def get(self, request, action=None, *args, **kwargs):
+        query_set = Reference.objects.filter(section=int(action)).order_by('name')
+        serializer = ReferenceSerializer(query_set, many=True)
+        return Response({"status": status.HTTP_200_OK, "data": serializer.data})
+
+
 class MachineryAPIView(APIView):
     def get(self, request, guid=None, *args, **kwargs):
         right = get_right(request.user)
-        if guid is not None and right>0:
+        if guid is not None and right > 0:
             instance = get_or_none(Machinery, guid=guid)
             if instance is None:
                 return Response(status=status.HTTP_404_FORBIDDEN)
@@ -129,9 +136,9 @@ class MachineryAPIView(APIView):
 
     def post(self, request, guid=None, *args, **kwargs):
         right = get_right(request.user)
-        if right!=1:
+        if right != 1:
             return Response(status=status.HTTP_403_FORBIDDEN)
-        if guid=='create':
+        if guid == 'create':
             serializer = MachinerySaveSerializer(data=request.data)
         else:
             serializer = MachinerySaveSerializer(get_or_none(Machinery, guid=guid), data=request.data)
