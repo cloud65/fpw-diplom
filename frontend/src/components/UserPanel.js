@@ -3,6 +3,8 @@ import { Header, Input, Button, Icon, Segment, Image, Tab }  from 'semantic-ui-r
 import {refereceRequest} from './Requests.js'
 import {MachineTable} from  './MachineTable.js';
 import {RefereceTable} from  './RefereceTable.js';
+import {MaintenanceTable} from  './MaintenanceTable.js';
+
 
 
 const rightText=["Не авторизован", "Менеджер", "Сервисная компания", "Клиент"]
@@ -21,9 +23,11 @@ export const UserPanel = (props) => {
               props.setMessage('Нет данных справочников (код '+result+')')
               return
           } 
-          setReferences(data.data)
+          setReferences({...data.data, machine:[]})
       })
   }
+  
+  const setMachines=(data)=>setReferences(d=>{return {...d, machine:data}})
   
   React.useEffect(()=>{
        reloadRefereces() 
@@ -32,11 +36,11 @@ export const UserPanel = (props) => {
    const panes = [
   {
     menuItem: 'Машины',
-    render: () => <Tab.Pane as='div'><MachineTable {...props} references={references} hideMenu={hideMenu} /></Tab.Pane>,
+    render: () => <Tab.Pane as='div'><MachineTable {...props} references={references} hideMenu={hideMenu} setMachines={setMachines}/></Tab.Pane>,
   },
   {
     menuItem: 'ТО',
-    render: () => <Tab.Pane as='div'>0</Tab.Pane>,
+    render: () => <Tab.Pane as='div'><MaintenanceTable {...props} references={references} hideMenu={hideMenu} /></Tab.Pane>,
   },
   {
     menuItem: 'Рекламации',

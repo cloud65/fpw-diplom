@@ -9,9 +9,9 @@ from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from app.models import Machinery, Reference, UserProfile
+from app.models import Machinery, Reference, UserProfile, Maintenance
 from app.serializers import LoginSerializers, CheckMachinerySerializer, MachinerySerializer, ReferenceSerializer, \
-    MachinerySaveSerializer, UserProfileSerializer
+    MachinerySaveSerializer, UserProfileSerializer, MaintenanceSerializer, MaintenanceSaveSerializer
 
 
 def get_or_none(model, *args, **kwargs):
@@ -24,6 +24,8 @@ def get_or_none(model, *args, **kwargs):
 def get_right(user):
     if user is None:
         return 0
+    if user.is_superuser:
+        return 1
     groups = user.groups.values_list('name', flat=True)
     if 'manager' in groups:
         return 1
@@ -32,6 +34,14 @@ def get_right(user):
     elif 'client' in groups:
         return 3
     return 0
+
+
+def get_errors(serializer):
+    default_errors = serializer.errors
+    field_names = []
+    for field_name, field_errors in default_errors.items():
+        field_names.append(field_name)
+    return Response({'error': f'Неверные значения {field_names}'}, status=status.HTTP_400_BAD_REQUEST)
 
 
 class LoginAPIView(APIView):
@@ -110,6 +120,19 @@ class ReferenceEditAPIView(APIView):
         serializer = ReferenceSerializer(query_set, many=True)
         return Response({"status": status.HTTP_200_OK, "data": serializer.data})
 
+    def post(self, request, action=None, *args, **kwargs):
+        right = get_right(request.user)
+        if right != 1:
+            return Response(status=status.HTTP_403_FORBIDDEN)
+        if action == 'create':
+            serializer = ReferenceSerializer(data=request.data)
+        else:
+            serializer = ReferenceSerializer(get_or_none(Reference, guid=action), data=request.data)
+        if serializer.is_valid(raise_exception=False):
+            serializer.save()
+            return Response({"status": status.HTTP_200_OK, "data": serializer.data})
+        return get_errors(serializer)
+
 
 class MachineryAPIView(APIView):
     def get(self, request, guid=None, *args, **kwargs):
@@ -146,8 +169,44 @@ class MachineryAPIView(APIView):
             serializer.save()
             return Response({"status": status.HTTP_200_OK, "data": serializer.data})
 
-        default_errors = serializer.errors
-        field_names = []
-        for field_name, field_errors in default_errors.items():
-            field_names.append(field_name)
-        return Response({'error': f'Неверные значения {field_names}'}, status=status.HTTP_400_BAD_REQUEST)
+        return get_errors(serializer)
+
+
+class MaintenanceAPIView(APIView):
+    def get(self, request, guid=None, *args, **kwargs):
+        right = get_right(request.user)
+
+        filter = {key: value for key, value in request.query_params.items() if value and Maintenance.field_exists(key)}
+        if request.query_params.get('number'):
+            filter['machine__number'] = request.query_params.get('number')
+
+        if right == 1:
+            query_set = Maintenance.objects.filter(**filter)
+        elif right == 2:
+            query_set = Maintenance.objects.filter(service=request.user, **filter)
+        elif right == 3:
+            query_set = Maintenance.objects.filter(machine__client=request.user, **filter)
+        else:
+            return Response(status=status.HTTP_403_FORBIDDEN)
+        order = '' if request.query_params.get('order', 'ascending') == 'descending' else '-'
+        serializer = MaintenanceSerializer(query_set.order_by(order + 'date'), many=True)
+        return Response({"status": status.HTTP_200_OK, "data": serializer.data})
+
+    def post(self, request, guid=None, *args, **kwargs):
+        right = get_right(request.user)
+        if right == 0:
+            return Response(status=status.HTTP_403_FORBIDDEN)
+        if guid == 'create':
+            serializer = MaintenanceSaveSerializer(data=request.data)
+        else:
+            serializer = MaintenanceSaveSerializer(get_or_none(Maintenance, guid=guid), data=request.data)
+        if serializer.is_valid(raise_exception=False):
+            serializer.save()
+            return Response({"status": status.HTTP_200_OK, "data": serializer.data})
+
+        return get_errors(serializer)
+
+
+class ReclamationAPIView(APIView):
+    def get(self, request, guid=None, *args, **kwargs):
+        right = get_right(request.user)

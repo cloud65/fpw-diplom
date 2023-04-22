@@ -46,6 +46,10 @@ export const refereceGetSection=(section, token, callback)=>{
     request('get', 'refs/'+section, token, null, callback)
 }
 
+export const refereceSaveRequest=(data, token, callback)=>{
+    request('post', 'refs/'+data.guid, token, data, callback)
+}
+
 export const machineCheckRequest=(number, token, callback)=>{
     request('get', 'check?number='+number, token, null, callback)    
 }
@@ -61,4 +65,17 @@ export const machineryGetRequest=(guid, token, callback)=>{
 
 export const machinerySaveRequest=(guid, token, data, callback)=>{
     request('post', 'machinery/'+guid, token, data, callback)    
+}
+
+export const maintenanceListRequest=(filter, order, page, token, callback)=>{
+    const qFilter = Object.keys(filter).map(key=>key+'='+filter[key]).join('&');
+    request('get', 'maintenance?page='+page+'&order='+order+'&'+qFilter, token, null, callback);
+}
+
+export const maintenanceGetRequest=(guid, token, callback)=>{
+    request('get', 'maintenance/'+guid, token, null, callback)    
+}
+
+export const maintenanceSaveRequest=(data, token, callback)=>{
+    request('post', 'maintenance/'+data.guid, token, data, callback)    
 }

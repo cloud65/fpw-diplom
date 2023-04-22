@@ -5,35 +5,37 @@ import {machineryListRequest} from './Requests.js'
 import {machineryGetRequest} from './Requests.js'
 import {MachineForm} from  './MachineForm.js';
 
+import {resolvePath} from './Funcs.js'
+
 const getCols = (media, right)=>{
     const data = {
        desktop: [
             ['_shipment', 'Дата отгрузки', 2], 
             ['number', 'Номер', 2],
-            ['model', 'Модель', 2],            
-            ['motor', 'Двигатель', 2],
-            ['transmission', 'Трансмиссия', 2],
-            ['bridge_drv', 'Ведущий мост', 2],
-            ['bridge_ctrl', 'Управляемый мост', 2],
+            ['model.name', 'Модель', 2],            
+            ['motor.name', 'Двигатель', 2],
+            ['transmission.name', 'Трансмиссия', 2],
+            ['bridge_drv.name', 'Ведущий мост', 2],
+            ['bridge_ctrl.name', 'Управляемый мост', 2],
        ],
        tablet: [
             ['_shipment', 'Дата', 2], 
             ['number', 'Номер', 2],
-            ['model', 'Модель', 2],            
-            ['motor', 'Двигатель', 2],            
+            ['model.name', 'Модель', 2],            
+            ['motor.name', 'Двигатель', 2],            
        ],
        mobile: [
             ['_shipment', 'Дата', 7], 
             //['number', 'Номер', 4],
-            ['model', 'Модель', 8]          
+            ['model.name', 'Модель', 8]          
        ]        
     }
     if (right==1){
-        data.desktop.push(['service', 'Сервис', 3])
-        data.desktop.push(['client', 'Клиент', 3])
+        data.desktop.push(['service.profile.organization_name', 'Сервис', 3])
+        data.desktop.push(['client.profile.organization_name', 'Клиент', 3])
     }
     else if (right==2){
-        data.desktop.push(['client', 'Клиент', 3])
+        data.desktop.push(['client.profile.organization_name', 'Клиент', 3])
     }
     return data[media]
 }
@@ -110,12 +112,15 @@ export const MachineTable = (props) => {
   const [reload, setReload] = React.useState(0)
   
   React.useEffect(()=>{
+      setLoader(true);      
       machineryListRequest(filter, order, page, props.userData.token, (result, data)=> {
+          setLoader(false);
           if (result!==200) {
               props.setMessage('Нет данных (код '+result+')')
               return
           }
-          setData(data.data)
+          setData(data.data);
+          props.setMachines(data.data.map(e=> {return {guid:e.guid, name: e.model.name+' №'+e.number}}))
       })
   }, [filter, order, page, reload])
   
@@ -151,10 +156,7 @@ export const MachineTable = (props) => {
   const rows = data.map((row, i)=>{
       row._shipment = formatDate(row.shipment)
       const rowCols = cols.map(e=>{
-          let value = row[e[0]];
-          if(typeof(value)==='object'){
-              value = (value.profile) ? value.profile.organization_name : value.name;
-          }
+          let value = resolvePath(row, e[0], '');
           return <Table.Cell key={'r_'+e[0] } title={value}>{value}</Table.Cell>
       })
       return <Table.Row key={row.guid} onClick={()=>openMachine(row.guid)}>

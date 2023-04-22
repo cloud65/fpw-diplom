@@ -52,6 +52,7 @@ class MachinerySerializer(serializers.ModelSerializer):
         fields = '__all__'
         depth = 2
 
+
 class MachinerySaveSerializer(serializers.ModelSerializer):
     class Meta:
         model = Machinery
@@ -63,7 +64,36 @@ class ReferenceSerializer(serializers.ModelSerializer):
         model = Reference
         fields = '__all__'
 
+
 class UserProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = UserProfile
+        fields = '__all__'
+
+
+class MaintenanceSerializer(serializers.ModelSerializer):
+    service = UserSerializer()
+
+    class Meta:
+        model = Maintenance
+        fields = '__all__'
+        depth = 2
+
+
+class MaintenanceSaveSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Maintenance
+        fields = '__all__'
+
+
+class ReclamationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Reclamation
+        fields = '__all__'
+        depth = 2
+
+
+class ReclamationSaveSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Reclamation
         fields = '__all__'

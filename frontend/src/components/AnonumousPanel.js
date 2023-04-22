@@ -12,7 +12,7 @@ export const AnonumousPanel = (props) => {
   
   React.useEffect(()=>{
       inputRef.current.focus()
-      setNumber('0045');
+      //setNumber('0045');
   }, [])
    
   const findDetail=()=>{

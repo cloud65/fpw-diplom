@@ -189,9 +189,9 @@ export const MachineForm = (props) => {
         return <MachineEdit {...props}/>        
     }else {
         return (<>
-        <Button onClick={props.onClose} icon color='blue' basic>
+        {props.right && <Button onClick={props.onClose} icon color='blue' basic>
             <Icon name='list ul'/>Список
-        </Button>
+        </Button>}
         {props.right===1 && <Button basic icon color='blue' onClick={()=>props.setEdit(true)}>
              <Icon name='edit' color='red'/> Изменить        
         </Button>}
