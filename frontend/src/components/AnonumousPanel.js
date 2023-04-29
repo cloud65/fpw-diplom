@@ -16,7 +16,7 @@ export const AnonumousPanel = (props) => {
   }, [])
    
   const findDetail=()=>{
-      console.log(number)
+      //console.log(number)
       machineCheckRequest(number, props.token, (result, data)=> {
           if (result!==200){
               props.setMessage('По вашему запросу ничего не найдено!')
