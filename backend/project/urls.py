@@ -38,11 +38,11 @@ urlpatterns = [
     path('api/machinery', MachineryAPIView.as_view()),
 
     path('api/maintenance/<str:guid>', MaintenanceAPIView.as_view()),
-    path('api/maintenance/machinery/<str:guid>', MaintenanceAPIView.as_view()),
+    #path('api/maintenance/machinery/<str:guid>', MaintenanceAPIView.as_view()),
     path('api/maintenance', MaintenanceAPIView.as_view()),
 
     path('api/reclamation/<str:guid>', ReclamationAPIView.as_view()),
-    path('api/reclamation/machinery/<str:guid>', ReclamationAPIView.as_view()),
+    #path('api/reclamation/machinery/<str:guid>', ReclamationAPIView.as_view()),
     path('api/reclamation', ReclamationAPIView.as_view()),
 
 ]

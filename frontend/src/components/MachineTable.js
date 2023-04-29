@@ -166,7 +166,7 @@ export const MachineTable = (props) => {
   })
   
  if (machine){
-     return <MachineForm data={machine} edit={edit} right={props.userData.right} token={props.userData.token}
+     return <MachineForm data={machine} edit={edit} userData={props.userData} token={props.userData.token}
                 media={props.media} references={props.references} setMessage={props.setMessage}
                 reload={setReload} reloadMachine={openMachine}
                 onClose={()=>{setEdit(false);setMachine(null)}} setEdit={setEdit}/>
@@ -175,7 +175,7 @@ export const MachineTable = (props) => {
  
  return <Segment basic style={{margin:0, padding:0}} loading={loader}>
    <div   style={{  margin: '2px 2px 0 2px'}}>
-    <Button.Group>
+    <Button.Group  size='mini'>
       <Button basic icon color={Object.keys(filter).length ? 'red' :'blue'} onClick={()=>setShowFilter(true)}>
         <Icon name='filter' />
       </Button>

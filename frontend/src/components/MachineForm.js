@@ -1,5 +1,5 @@
 import React from 'react'
-import { Grid, Container, Item, Icon, Form, Button }  from 'semantic-ui-react'
+import { Grid, Container, Item, Icon, Form, Button, Tab }  from 'semantic-ui-react'
 
 import imgMachine from '../images/machine.png'; 
 import imgTransmission from '../images/transmission.png'; 
@@ -15,6 +15,10 @@ import imgConsignee from '../images/consignee.png';
 import imgEquipment from '../images/equipment.png'; 
 
 import {machinerySaveRequest} from './Requests.js'
+
+import {MaintenanceTable} from  './MaintenanceTable.js';
+import {ReclamationTable} from  './ReclamationTable.js';
+
 
 
 import {formatDate} from './Funcs.js'
@@ -61,7 +65,7 @@ const MachineView = (props) => {
             model={data.bridge_ctrl && data.bridge_ctrl.name} number={"№ "+data.bridge_ctrl_number} 
             description={data.bridge_ctrl && data.bridge_ctrl.description}/>
     </Grid.Column>
-    {props.right && <React.Fragment>
+    {props.userData.right && <React.Fragment>
         <Grid.Column mobile={16} computer={5} tablet={8}>
             <ItemInfo media={data.media} image={imgShipment} unit='Дата отгрузки с завода' model={formatDate(data.shipment)} number={''} description={''}/>
         </Grid.Column>
@@ -135,12 +139,16 @@ const MachineEdit=(props)=>{
         
     }
     
+    const close=()=>{
+        props.onClose()
+        if (props.data.guid) props.reloadMachine(props.data.guid)        
+    }
 
     return <>
-        <Button onClick={props.onClose} icon color='blue' basic>
+        <Button onClick={close} icon color='blue' basic>
             <Icon name='cancel'/>Отмена
         </Button>
-        {props.right===1 && <Button basic icon color='blue' onClick={save}>
+        {props.userData.right===1 && <Button basic icon color='blue' onClick={save}>
              <Icon name='save' color='red'/>Записать        
         </Button>}
         <div>
@@ -188,6 +196,41 @@ export const MachineForm = (props) => {
     if (props.edit){
         return <MachineEdit {...props}/>        
     }else {
+        const isMobile=(props.media==='mobile')
+        const panes = [
+          {
+            menuItem:  { key: 'list', icon: 'list ul', content: !isMobile ? 'Список' : '' , onClick: props.onClose },
+            render: () => <Tab.Pane as='div'></Tab.Pane>,
+          },
+          {
+            menuItem:  { key: 'info', icon: 'info circle', content: !isMobile ? 'Информация' : '' },
+            render: () => <Tab.Pane as='div'><div><MachineView {...props}/></div></Tab.Pane>,
+          }
+        ];
+        if(props.userData.right===1) panes.push({
+            menuItem:  { key: 'edit', icon: 'edit', content: !isMobile ? 'Изменить' : '', onClick: ()=>props.setEdit(true) },
+            render: () => <Tab.Pane as='div'></Tab.Pane>,
+          });
+        
+        panes.push({
+        menuItem:  { key: 'maintenance', icon: 'settings', content: !isMobile ? 'ТО' : ''},
+        render: () => <Tab.Pane as='div'>
+                <MaintenanceTable {...props} machine={props.data.guid} strMachine={props.data.model.name+" №"+props.data.number} />
+            </Tab.Pane>,
+        });
+        
+        panes.push({
+        menuItem:  { key: 'reclamation', icon: 'wrench', content: !isMobile ? 'Рекламации' : ''},
+        render: () => <Tab.Pane as='div'>
+                <ReclamationTable {...props} machine={props.data.guid}  strMachine={props.data.model.name+" №"+props.data.number} />
+            </Tab.Pane>,
+        });
+       
+
+        
+        return <Tab defaultActiveIndex={1} menu={{ secondary: true, pointing: true, color:'blue', attached:true }} panes={panes} />
+        
+        /*
         return (<>
         {props.right && <Button onClick={props.onClose} icon color='blue' basic>
             <Icon name='list ul'/>Список
@@ -198,6 +241,6 @@ export const MachineForm = (props) => {
         <div>
             <MachineView {...props}/>
         </div>
-        </>)
+        </>)*/
     }
 }

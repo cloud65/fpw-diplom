@@ -4,6 +4,7 @@ import {refereceRequest} from './Requests.js'
 import {MachineTable} from  './MachineTable.js';
 import {RefereceTable} from  './RefereceTable.js';
 import {MaintenanceTable} from  './MaintenanceTable.js';
+import {ReclamationTable} from  './ReclamationTable.js';
 
 
 
@@ -44,7 +45,7 @@ export const UserPanel = (props) => {
   },
   {
     menuItem: 'Рекламации',
-    render: () => <Tab.Pane as='div'>0</Tab.Pane>,
+    render: () => <Tab.Pane as='div'><ReclamationTable {...props} references={references} hideMenu={hideMenu} /></Tab.Pane>,
   },
 ]
 

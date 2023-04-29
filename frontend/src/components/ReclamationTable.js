@@ -1,33 +1,41 @@
 import React from 'react'
 import { Table, Icon, Button, Portal, Segment, Header, Form, Modal }  from 'semantic-ui-react'
 import {formatDate} from './Funcs.js'
-import {maintenanceListRequest} from './Requests.js'
-import {maintenanceSaveRequest} from './Requests.js'
+import {reclamationListRequest} from './Requests.js'
+import {reclamationSaveRequest} from './Requests.js'
 import {resolvePath} from './Funcs.js'
+
+const diffInDays =(first, second)=>{
+    const x = new Date(first);
+    const y = new Date(second);
+     
+    return Math.floor((y-x) / (1000 * 60 * 60 * 24));
+}
 
 
 const getCols = (media, right)=>{
     const data = {
        desktop: [
-            ['_date', 'Дата', 2], 
-            ['form.name', 'Вид ТО', 2],
+            ['_date', 'Дата отказа', 2], 
             ['machine.model.name', 'Модель', 2],            
             ['machine.number', 'Номер', 1],
-            ['mileage', 'Наработка', 1],
-            ['organization.name', 'Организация, проводившая ТО', 2],
+            ['unit.name', 'Узел отказа', 2],
+            ['recovery.name', 'Способ восстановления', 2],
+            ['_repair_date', 'Дата восстановления', 2],
             ['service.profile.organization_name', 'Сервисная компания', 2],
        ],
        tablet: [
-            ['_date', 'Дата', 2], 
-            ['form.name', 'Вид', 2],
+            ['_date', 'Дата отказа', 2],             
             ['machine.model.name', 'Модель', 3],            
-            ['machine.number', 'Номер', 2],            
-            ['mileage', 'Наработка', 2],  
+            ['machine.number', 'Номер', 2], 
+            ['unit.name', 'Узел отказа', 2],
+            ['_repair_date', 'Восстановление', 2],            
        ],
        mobile: [
             ['_date', 'Дата', 5], 
-            ['form.name', 'Вид', 7],          
             ['machine.number', 'Номер', 4],
+            ['unit.name', 'Узел', 7],
+
        ]        
     }
     return data[media]
@@ -68,13 +76,14 @@ const FilterBox=(props)=>{
         zIndex: 1000,
       }}
     >
-      <Header>Фильтр таблицы "ТО"</Header>
+      <Header>Фильтр таблицы "Рекламации"</Header>
       <Form>
         <Form.Select  search  selection  clearable       
-            label='Вид ТО' name='form' value={filter.form||null} 
-            onChange={handleChange} options={getOptions('form_maintenance')} />
-        <Form.Input label='Зав.номер машины' name='number' value={filter.number||''} 
-            onChange={handleChange}/>
+            label='Узел оказа' name='unit' value={filter.unit||null} 
+            onChange={handleChange} options={getOptions('unit')} />
+         <Form.Select  search  selection  clearable       
+            label='Способ восстановления' name='recovery' value={filter.recovery||null} 
+            onChange={handleChange} options={getOptions('recovery')} />
         <Form.Select  search  selection  clearable      
             label='Сервисная компания' name='service' value={filter.service||null} 
             onChange={handleChange} options={getOptions('service')} />
@@ -95,28 +104,30 @@ const EditBox=(props)=>{
     const [data, setData] = React.useState({});
     
     const machines = props.references.machine.map(e=> {return {key:e.guid, value:e.guid, text:e.name}})
-    const form_maintenances = props.references.form_maintenance.map(e=> {return {key:e.guid, value:e.guid, text:e.name}})
-    const organizations = props.references.organization.map(e=> {return {key:e.guid, value:e.guid, text:e.name}})
+    const units = props.references.unit.map(e=> {return {key:e.guid, value:e.guid, text:e.name}})
+    const recoveries = props.references.recovery.map(e=> {return {key:e.guid, value:e.guid, text:e.name}})
     const services = props.references.service.map(e=> {return {key:e.user, value:e.user, text:e.organization_name}})
     
-    const ro=false
+    const ro=props.readOnly
+    
+    const downtime = Math.max(diffInDays(data.date, data.repair_date), 0);
     
     React.useEffect(()=> {
         const newData = {...props.data}         
         newData.date = props.data.date || formatDate(new Date())
-        newData.order_date = props.data.order_date || formatDate(new Date())
+        newData.repair_date = props.data.repair_date || formatDate(new Date())
         newData.machine = props.data.machine && props.data.machine.guid || props.machine
-        newData.form = props.data.form && props.data.form.guid
-        newData.organization = props.data.organization && props.data.organization.guid
-        newData.service = props.data.service && props.data.service.id || props.service
+        newData.unit = props.data.unit && props.data.unit.guid
+        newData.recovery = props.data.recovery && props.data.recovery.guid
+        newData.service = props.data.service && props.data.service.id  || props.service
         setData(newData)
     }, [props.data, props.machine]);
     
-    const handleChange=(ev, {name, value})=>setData(d=>{return {...d, [name]:value }})
+    const handleChange=(ev, {name, value})=>setData(d=>{return {...d, [name]:value }})    
     
     const save=()=>{
         setLoader(true);
-        maintenanceSaveRequest(data, props.token, (result, data)=> {
+        reclamationSaveRequest({...data, downtime: downtime}, props.token, (result, data )=> {
               setLoader(false);
               if (result!==200) {
                   props.setMessage({header: 'Ошибка записи (код '+result+')', error:data.error})
@@ -131,14 +142,26 @@ const EditBox=(props)=>{
     return <Modal open={true} onClose={props.onClose} size='mini'>
         <Modal.Content>
         <Form loading={loader}>
-            <SelectField label='Машина' name='machine' value={data.machine||''} onChange={handleChange} options={machines} readOnly={ro}/>                    
-            <SelectField label='Вид ТО' name='form' value={data.form||''} onChange={handleChange} options={form_maintenances} readOnly={ro}/>
-            <Form.Input type='date' label='Дата проведения ТО' name='date' value={data.date||''} onChange={handleChange} readOnly={ro}/>
+            <SelectField label='Машина' name='machine' value={data.machine||''} onChange={handleChange} options={machines} readOnly={ro}/>
+            
+            <Form.Input type='date' label='Дата отказа' name='date' value={data.date||''} onChange={handleChange} readOnly={ro}/>
+            
+            <SelectField label='Узел отказа' name='unit' value={data.unit||''} onChange={handleChange} options={units} readOnly={ro}/>
+            
             <Form.Input type='number' label='Наработка, м/час' name='mileage' value={data.mileage||''} onChange={handleChange} readOnly={ro}/>
-            <Form.Input label='№ заказ-наряда' name='order_number' value={data.order_number||''} onChange={handleChange} readOnly={ro}/>
-            <Form.Input type='date' label='Дата заказ-наряда' name='order_date' value={data.order_date||''} onChange={handleChange} readOnly={ro}/>
-            <SelectField label='Организация, проводившая ТО' name='organization' value={data.organization||''} onChange={handleChange} options={organizations} readOnly={ro}/>
-            <SelectField label='Сервисная компания' name='service' value={data.service||''} onChange={handleChange}  options={services} readOnly={ro}/>
+            
+            <Form.TextArea label='Описание отказа' name='description' value={data.description||''} onChange={handleChange} readOnly={ro}/>
+            
+            <SelectField label='Способ восстановления' name='recovery' value={data.recovery||''} onChange={handleChange} options={recoveries} readOnly={ro}/>
+            
+            <Form.TextArea label='Используемые запасные части' name='repair_units' value={data.repair_units||''} onChange={handleChange} readOnly={ro}/>
+            
+            <Form.Input type='date' label='Дата восстановления' name='repair_date' value={data.repair_date||''} onChange={handleChange} readOnly={ro}/>
+            
+            <Form.Input type='number' label='Время простоя техники' name='downtime' value={downtime||''} readOnly={true}/>
+            
+            <SelectField label='Сервисная компания' name='service' value={data.service||''} onChange={handleChange}  options={services} 
+            readOnly={ro || props.isService}/>
         </Form>
         </Modal.Content>
         <Modal.Actions style={{padding:'3px'}}>
@@ -149,7 +172,7 @@ const EditBox=(props)=>{
 }
 
 
-export const MaintenanceTable = (props) => {
+export const ReclamationTable = (props) => {
   const [filter, setFilter] = React.useState({}) 
   const [loader, setLoader] = React.useState(false) 
   const [showFilter, setShowFilter] = React.useState(false) 
@@ -163,7 +186,7 @@ export const MaintenanceTable = (props) => {
       setLoader(true);
       const filterRequest = {...filter}
       if (props.machine) filterRequest['machine'] = props.machine
-      maintenanceListRequest(filterRequest, order, page, props.userData.token, (result, data)=> {
+      reclamationListRequest(filterRequest, order, page, props.userData.token, (result, data)=> {
           setLoader(false);
           if (result!==200) {
               props.setMessage('Нет данных (код '+result+')')
@@ -172,7 +195,6 @@ export const MaintenanceTable = (props) => {
           setData(data.data)
       })
   }
-  
   
   React.useEffect(()=>reload(), [filter, order, page])
   
@@ -188,6 +210,7 @@ export const MaintenanceTable = (props) => {
   
   const rows = data.map((row, i)=>{
       row._date = formatDate(row.date)
+      row._repair_date = formatDate(row.repair_date)
       const rowCols = cols.map(e=>{
           let value = resolvePath(row, e[0], '');
           return <Table.Cell key={'r_'+e[0] } title={value}>{value}</Table.Cell>
@@ -198,15 +221,19 @@ export const MaintenanceTable = (props) => {
       </Table.Row>       
   })
   
-  const isService = props.userData.right===2;
-  
+ 
+ const readOnly = props.userData.right!==1 && props.userData.right!==2;
+ 
+ const isService = props.userData.right===2;
+ 
+ 
  return <Segment basic style={{margin:0, padding:0}} loading={loader}>
    <div   style={{  margin: '2px 2px 0 2px'}}>
     <Button.Group size='mini'>
       <Button basic icon color={Object.keys(filter).length ? 'red' :'blue'} onClick={()=>setShowFilter(true)}>
         <Icon name='filter' />
       </Button>
-      {props.userData.right>0 && <Button basic icon color='blue' onClick={()=>{setEdit('create')}}>
+      {!readOnly && <Button basic icon color='blue' onClick={()=>{setEdit('create')}}>
         <Icon name='plus' color='red'/> Добавить        
       </Button>}
     </Button.Group>
@@ -230,7 +257,8 @@ export const MaintenanceTable = (props) => {
   {edit!==null && <EditBox data={data.find(e=>e.guid===edit) || {guid: 'create'}} 
             token={props.userData.token} setMessage={props.setMessage}
             machine={props.machine} service={isService ? props.userData.id : null}
-            onClose={()=>setEdit(null)} reload={()=>reload()} references={props.references}/>}
+            isService={isService}
+            onClose={()=>setEdit(null)} reload={()=>reload()} references={props.references} readOnly={readOnly}/>}
  </Segment>
 }
 

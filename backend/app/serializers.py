@@ -87,6 +87,8 @@ class MaintenanceSaveSerializer(serializers.ModelSerializer):
 
 
 class ReclamationSerializer(serializers.ModelSerializer):
+    service = UserSerializer()
+
     class Meta:
         model = Reclamation
         fields = '__all__'

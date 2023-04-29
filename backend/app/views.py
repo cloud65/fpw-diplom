@@ -9,9 +9,10 @@ from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from app.models import Machinery, Reference, UserProfile, Maintenance
+from app.models import Machinery, Reference, UserProfile, Maintenance, Reclamation
 from app.serializers import LoginSerializers, CheckMachinerySerializer, MachinerySerializer, ReferenceSerializer, \
-    MachinerySaveSerializer, UserProfileSerializer, MaintenanceSerializer, MaintenanceSaveSerializer
+    MachinerySaveSerializer, UserProfileSerializer, MaintenanceSerializer, MaintenanceSaveSerializer, \
+    ReclamationSerializer, ReclamationSaveSerializer
 
 
 def get_or_none(model, *args, **kwargs):
@@ -65,7 +66,8 @@ class LoginAPIView(APIView):
             return PermissionDenied()
         result = dict(
             status=status.HTTP_200_OK,
-            user=dict(name=request.user.username,
+            user=dict(id=request.user.id,
+                      name=request.user.username,
                       organization_name=request.user.profile.organization_name,
                       groups=request.user.groups.values_list('name', flat=True)
                       )
@@ -172,24 +174,28 @@ class MachineryAPIView(APIView):
         return get_errors(serializer)
 
 
-class MaintenanceAPIView(APIView):
+class TablesAPIView(APIView):
+    model = object
+    serializer = object
+    save_serializer = object
+
     def get(self, request, guid=None, *args, **kwargs):
         right = get_right(request.user)
 
-        filter = {key: value for key, value in request.query_params.items() if value and Maintenance.field_exists(key)}
+        filter = {key: value for key, value in request.query_params.items() if value and self.model.field_exists(key)}
         if request.query_params.get('number'):
             filter['machine__number'] = request.query_params.get('number')
 
         if right == 1:
-            query_set = Maintenance.objects.filter(**filter)
+            query_set = self.model.objects.filter(**filter)
         elif right == 2:
-            query_set = Maintenance.objects.filter(service=request.user, **filter)
+            query_set = self.model.objects.filter(service=request.user, **filter)
         elif right == 3:
-            query_set = Maintenance.objects.filter(machine__client=request.user, **filter)
+            query_set = self.model.objects.filter(machine__client=request.user, **filter)
         else:
             return Response(status=status.HTTP_403_FORBIDDEN)
         order = '' if request.query_params.get('order', 'ascending') == 'descending' else '-'
-        serializer = MaintenanceSerializer(query_set.order_by(order + 'date'), many=True)
+        serializer = self.serializer(query_set.order_by(order + 'date'), many=True)
         return Response({"status": status.HTTP_200_OK, "data": serializer.data})
 
     def post(self, request, guid=None, *args, **kwargs):
@@ -197,9 +203,9 @@ class MaintenanceAPIView(APIView):
         if right == 0:
             return Response(status=status.HTTP_403_FORBIDDEN)
         if guid == 'create':
-            serializer = MaintenanceSaveSerializer(data=request.data)
+            serializer = self.save_serializer(data=request.data)
         else:
-            serializer = MaintenanceSaveSerializer(get_or_none(Maintenance, guid=guid), data=request.data)
+            serializer = self.save_serializer(get_or_none(self.model, guid=guid), data=request.data)
         if serializer.is_valid(raise_exception=False):
             serializer.save()
             return Response({"status": status.HTTP_200_OK, "data": serializer.data})
@@ -207,6 +213,19 @@ class MaintenanceAPIView(APIView):
         return get_errors(serializer)
 
 
-class ReclamationAPIView(APIView):
-    def get(self, request, guid=None, *args, **kwargs):
+class MaintenanceAPIView(TablesAPIView):
+    model = Maintenance
+    serializer = MaintenanceSerializer
+    save_serializer = MaintenanceSaveSerializer
+
+
+class ReclamationAPIView(TablesAPIView):
+    model = Reclamation
+    serializer = ReclamationSerializer
+    save_serializer = ReclamationSaveSerializer
+
+    def post(self, request, guid=None, *args, **kwargs):
         right = get_right(request.user)
+        if right == 3:
+            return Response(status=status.HTTP_403_FORBIDDEN)
+        return super().post(request, guid, *args, **kwargs)

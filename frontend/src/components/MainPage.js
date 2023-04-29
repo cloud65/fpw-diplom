@@ -14,7 +14,7 @@ import { Container, Segment, Header, Button, Portal } from 'semantic-ui-react'
 
 const getRight=(groups)=>{
     if (groups.indexOf('manager')!==-1) return 1
-    if (groups.indexOf('serivce')!==-1) return 2
+    if (groups.indexOf('service')!==-1) return 2
     if (groups.indexOf('client')!==-1) return 3
     return 0
 }

@@ -72,10 +72,16 @@ export const maintenanceListRequest=(filter, order, page, token, callback)=>{
     request('get', 'maintenance?page='+page+'&order='+order+'&'+qFilter, token, null, callback);
 }
 
-export const maintenanceGetRequest=(guid, token, callback)=>{
-    request('get', 'maintenance/'+guid, token, null, callback)    
-}
-
 export const maintenanceSaveRequest=(data, token, callback)=>{
     request('post', 'maintenance/'+data.guid, token, data, callback)    
+}
+
+
+export const reclamationListRequest=(filter, order, page, token, callback)=>{
+    const qFilter = Object.keys(filter).map(key=>key+'='+filter[key]).join('&');
+    request('get', 'reclamation?page='+page+'&order='+order+'&'+qFilter, token, null, callback);
+}
+
+export const reclamationSaveRequest=(data, token, callback)=>{
+    request('post', 'reclamation/'+data.guid, token, data, callback)    
 }
