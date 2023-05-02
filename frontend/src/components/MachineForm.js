@@ -65,7 +65,7 @@ const MachineView = (props) => {
             model={data.bridge_ctrl && data.bridge_ctrl.name} number={"№ "+data.bridge_ctrl_number} 
             description={data.bridge_ctrl && data.bridge_ctrl.description}/>
     </Grid.Column>
-    {props.userData.right && <React.Fragment>
+    {props.userData && props.userData.right && <React.Fragment>
         <Grid.Column mobile={16} computer={5} tablet={8}>
             <ItemInfo media={data.media} image={imgShipment} unit='Дата отгрузки с завода' model={formatDate(data.shipment)} number={''} description={''}/>
         </Grid.Column>
@@ -148,7 +148,7 @@ const MachineEdit=(props)=>{
         <Button onClick={close} icon color='blue' basic>
             <Icon name='cancel'/>Отмена
         </Button>
-        {props.userData.right===1 && <Button basic icon color='blue' onClick={save}>
+        {props.userData && props.userData.right===1 && <Button basic icon color='blue' onClick={save}>
              <Icon name='save' color='red'/>Записать        
         </Button>}
         <div>
@@ -196,6 +196,8 @@ export const MachineForm = (props) => {
     if (props.edit){
         return <MachineEdit {...props}/>        
     }else {
+        if (!props.userData) return <MachineView {...props}/>
+        
         const isMobile=(props.media==='mobile')
         const panes = [
           {
@@ -207,7 +209,7 @@ export const MachineForm = (props) => {
             render: () => <Tab.Pane as='div'><div><MachineView {...props}/></div></Tab.Pane>,
           }
         ];
-        if(props.userData.right===1) panes.push({
+        if(props.userData && props.userData.right===1) panes.push({
             menuItem:  { key: 'edit', icon: 'edit', content: !isMobile ? 'Изменить' : '', onClick: ()=>props.setEdit(true) },
             render: () => <Tab.Pane as='div'></Tab.Pane>,
           });

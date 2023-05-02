@@ -49,7 +49,7 @@ export const UserPanel = (props) => {
   },
 ]
 
- if(props.userData.right===1) {
+ if(props.userData && props.userData.right===1) {
      panes.push({
         menuItem: 'Cправочники',
     render: () => <Tab.Pane as='div'><RefereceTable {...props} reload={()=>reloadRefereces()}/></Tab.Pane>,
